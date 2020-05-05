@@ -14,8 +14,6 @@ def sieve(n):
                 j=j+1
                 
     return primfeld
- 
-print(sieve(1000))
 
 
 
