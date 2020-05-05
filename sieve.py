@@ -1,6 +1,6 @@
 import math
 
-def sieb(n):
+def sieve(n):
      #wir gehen davon aus: alle Zahlen sind PZ
     feld = [True]*n 
     primfeld = list()
@@ -9,14 +9,13 @@ def sieb(n):
             primfeld.append(i)
             j=i
             #streiche nun alle Vielfachen der PZ:
-            while i*j<=n:
+            while i*j<n:
                 feld[j*i] = False
                 j=j+1
                 
-                
     return primfeld
  
-
+print(sieve(1000))
 
 
 
