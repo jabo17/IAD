@@ -162,6 +162,7 @@ def check_integer_sorting(original, result):
     for i in range(0,len(result)):
         a = original[i]
         assert a in result
+        result.remove(a)
 
 def check_student_sorting(original, result, key):
     '''Parameter 'original' contains the array before sorting,
