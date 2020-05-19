@@ -3,10 +3,9 @@ import random
 from sortalgorithm import insertion_sort
 from random import randint
 
-#(a) ein Fixture ist Hilfscode, den man ausführt,bevor die testfunktion  ausgeführt wird,
-#  um nicht so viel extra code zu schreiben
-#   man benutzt es, indem man über die funktion @pytest.fixture schreibt und die funktion dann über die 
-# testfunktion aufruft 
+#(a) ein Fixture ist Hilfscode, der ausgeführt wird, bevor die Testfunktion ausgeführt wird,
+#  um nicht so viel extra code zu schreiben und das Testen besser von der Initalisierung der Vorbedingungen zu trennen.
+# Man benutzt es, indem man über die Funktion @pytest.fixture schreibt, welche dann vor dem Aufruf einer Testfunktion von pytest aufgerufen wird.
 
 
 class Student:
@@ -167,6 +166,7 @@ def check_integer_sorting(original, result):
     for i in range(0,len(result)):
         a = original[i]
         assert a in result
+        result.remove(a) #hier hat Jannick noch etwas verändert
 
 def check_student_sorting(original, result, key):
     '''Parameter 'original' contains the array before sorting,
