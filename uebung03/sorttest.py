@@ -1,5 +1,13 @@
 import pytest
+import random
+from sortalgorithm import insertion_sort
 from random import randint
+
+#(a) ein Fixture ist Hilfscode, den man ausführt,bevor die testfunktion  ausgeführt wird,
+#  um nicht so viel extra code zu schreiben
+#   man benutzt es, indem man über die funktion @pytest.fixture schreibt und die funktion dann über die 
+# testfunktion aufruft 
+
 
 class Student:
     def __init__(self, name, mark):
@@ -104,9 +112,26 @@ def arrays():
 
 ##################################################################
 
+#stuff for test functions
+
+@pytest.fixture
+def original():
+    return [4,7,2,10]
+
+
+@pytest.fixture
+def result ():
+    return insertion_sort(original())
+
+#################################################################
+
 def test_checks():
-    # test that the check_ functions actually find the desired errors
-    ... # your code here
+    #fehler für länge
+    check_integer_sorting([3,4],[1])
+    #fehler für nicht sortiertes Ergebnis
+    check_integer_sorting([5,3,7],[3,7,5])
+    #fehler für nicht enthaltensein
+    check_integer_sorting([1,2,3],[1,1,2])
 
 def test_builtin_sort(arrays):
     # test the integer arrays
@@ -129,7 +154,15 @@ def test_insertion_sort(arrays):
 def check_integer_sorting(original, result):
     '''Parameter 'original' contains the array before sorting,
     parameter 'result' contains the output of the sorting algorithm.'''
-    ... # your code here
+    #gleiche länge
+    assert len(original)== len(result)
+    #sortiertes Ergebnis:
+    for i in range(0,len(result)-1):
+        assert result[i]<= result[i+1]
+    #gleiche Elemente:
+    for i in range(0,len(result)):
+        a = original[i]
+        assert a in result
 
 def check_student_sorting(original, result, key):
     '''Parameter 'original' contains the array before sorting,
@@ -137,3 +170,6 @@ def check_student_sorting(original, result, key):
     'key' is the attribute defining the order.
     '''
     ... # your code here
+
+#main
+#test_checks()
