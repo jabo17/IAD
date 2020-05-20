@@ -27,12 +27,11 @@ def archimedes1(k):
     print("Differenz der Schranken:", obereschranke -untereschranke)
 #(b)
 #folgende Beobachtungen für große n:
-#für n=25 liegt die untere Schranke drüber...(3.16)
 #für n=27 obere Schätzwert =0.0
 #         unterer Schätzwert = 4.0,
 #  wir haben eine Auslöschung, denn: 
 # in aessereseck wird in der Klammer (sqr(4+(t_n)^2)-2) berechnet. Für ein hinreichend kleines n wird 
-# durch die Addition mit 4, der 32 Bit Speicher für float nicht mehr ausreichen, um die kleinen Nachkommastellen
+# durch die Addition mit 4, der 64 Bit Speicher für float nicht mehr ausreichen, um die kleinen Nachkommastellen
 #(in unserem Fall: die Zahl 2.6374*10^(-16)) noch darzustellen. Sie werden einfach abgeschnitten und
 #wir erhalten sqr(4)-2 = 0 und damit insgesamt 0 als Ergebnis
 
@@ -65,7 +64,7 @@ def archimedes2(k):
 
 #die neuen Formeln sind besser, weil wir fast nur + operationen auführen und so keine Auslöschung 
 #durch subtraktion entstehen kann, an dre einzigen Stelle, an der - operation (in s_n)ausgeführt wird, kann
-#keine Null ebtstehen, weil anschließend wieder addiert. (blah hier bitte noch einfügen)
+#keine Null entstehen, weil anschließend wieder addiert. (blah hier bitte noch einfügen)
 
 #pro Verdopplung bekommt man in etwa 1 zusätzliche Dezimalstelle für kleine n von pi
 
