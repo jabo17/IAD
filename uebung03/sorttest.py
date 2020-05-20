@@ -1,6 +1,4 @@
 import pytest
-import random
-from sortalgorithm import insertion_sort
 from random import randint
 
 #(a) ein Fixture ist Hilfscode, der ausgeführt wird, bevor die Testfunktion ausgeführt wird,
@@ -52,6 +50,7 @@ def insertion_sort_1(a, key=lambda x: x):
         current = a[i]
         j = i
         while j > 0:
+            #we need <= otherwise we swap equal values, which implies an unstable algorithm
             if key(a[j-1]) < key(current):
                 break
             else:
@@ -111,48 +110,80 @@ def arrays():
 
 ##################################################################
 
-#stuff for test functions
+#stable version of insertionsort:
+def insertion_sort(a, key=lambda x: x):
+    for i in range(1, len(a)):
+        current = a[i]
+        j = i
+        while j > 0:
+            #= verbessert
+            if key(a[j-1]) <= key(current):
+                break
+            else:
+                a[j] = a[j-1]
+            j -= 1
+        a[j] = current
 
-@pytest.fixture
-def original():
-    return [4,7,2,10]
 
-
-@pytest.fixture
-def result ():
-    return insertion_sort(original())
 
 #################################################################
 
-def test_checks():
-    #fehler für länge
-    check_integer_sorting([3,4],[1])
-    #fehler für nicht sortiertes Ergebnis
-    check_integer_sorting([5,3,7],[3,7,5])
-    #fehler für nicht enthaltensein
-    check_integer_sorting([1,2,3],[1,1,2])
+# def test_checks():
+#     #fehler für länge
+#     check_integer_sorting([3,4],[1])
+#     #fehler für nicht sortiertes Ergebnis
+#     check_integer_sorting([5,3,7],[3,7,5])
+#     #fehler für nicht enthaltensein
+#     check_integer_sorting([1,2,3],[1,1,2])
 
 def test_builtin_sort(arrays):
     # test the integer arrays
     for original in arrays['int_arrays']:
         sorted(original)
         check_integer_sorting(original,sorted(original))
-        ... # your code here (test that array is sorted)
 
     # test the Student arrays
     for original in arrays['student_arrays']:
-        ... # your code here (test that array is stably sorted)
+        result_mark = list(original)
+        result_mark.sort(key=Student.get_mark)
+        check_student_sorting(original,result_mark, key=Student.get_mark)
+
+        result_name = list(original)
+        result_name.sort(key=Student.get_name)
+        check_student_sorting(original,result_name,key=Student.get_name)
+        
 
 def test_insertion_sort(arrays):
     # test the integer arrays
     for original in arrays['int_arrays']:
-        insertion_sort_1(original)
-        check_integer_sorting(original,insertion_sort_1(original))
-        ... # your code here (test that array is sorted)
+        result=list(original)
+        #unstable insertionsort:
+        insertion_sort_1(result)
+        check_integer_sorting(original,result)
+        #stable inertionsort:
+        insertion_sort(result)
+        check_integer_sorting(original,result)
 
     # test the Student arrays
     for original in arrays['student_arrays']:
-        ... # your code here (test that array is stably sorted)
+        result_mark = original
+        #unstable insertionsort:
+        try:
+            insertion_sort_1(result_mark, key=Student.get_mark)
+        except: None
+        check_student_sorting(original,result_mark, key=Student.get_mark)
+        #stable inertionsort:
+        insertion_sort(result_mark, key=Student.get_mark)
+        check_student_sorting(original,result_mark, key=Student.get_mark)
+
+
+        result_name = original
+        #unstable insertionsort:
+        insertion_sort_1(result_name,key=Student.get_name)
+        check_student_sorting(original, result_name, key=Student.get_name)
+        #stable insertionsort:
+        insertion_sort(result_name, key=Student.get_name)
+        check_student_sorting(original, result_name, key= Student.get_name)
 
 def check_integer_sorting(original, result):
     '''Parameter 'original' contains the array before sorting,
@@ -173,7 +204,30 @@ def check_student_sorting(original, result, key):
     parameter 'result' contains the output of the sorting algorithm.
     'key' is the attribute defining the order.
     '''
-    ... # your code here
+    #gleiche länge
+    assert len(original)== len(result)
+    #sortiertes Ergebnis:
+    for i in range (len(result)-1):
+        assert key(result[i])<= key(result[i+1])
+    #gleiche Elemente:
+    for i in range(len(result)):
+        a = original[i]
+        assert a in result
+        #die hart ineffiziente Variante
+        #stabiler algorithmus?:
+        #wir fangen bei i+1 an, denn vorher haben wir schon überprüft
+        # for j in range(i+1,len(result)): 
+        #     if key(a)== key(original[j]):
+        #      #wir haben schon gewährleistet durch die Schleife, dass i < j
+        #         lower= original[i]
+        #         upper = original[j]
+        #         assert result.index(lower) < result.index(upper)
+        j = result.index(a) #get index of first match
+        assert j==0 or key(result[j-1])<key(a) #assert is was stable sorted // falls eq => a was not stable sorted
+        result.remove(a)       
+
+                
+
 
 #main
 #test_checks()
