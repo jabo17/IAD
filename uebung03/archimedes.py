@@ -62,11 +62,12 @@ def archimedes2(k):
     print("unterer Schätzwert:", untereschranke)
     print("Differenz der Schranken:", obereschranke -untereschranke)
 
-#die neuen Formeln sind besser, weil wir fast nur + operationen auführen und so keine Auslöschung 
-#durch subtraktion entstehen kann, an dre einzigen Stelle, an der - operation (in s_n)ausgeführt wird, kann
-#keine Null entstehen, weil anschließend wieder addiert. (blah hier bitte noch einfügen)
+#die neuen Formeln sind besser, weil wir fast nur + operationen an nicht negativen Zahlen auführen und
+# so keine Auslöschung durch subtraktion entstehen kann, 
+# an der einzigen Stelle, an der - operation (in s_n)ausgeführt wird, kann
+#keine Null entstehen, weil s_n^2 gegen 0 geht, für große n. Damit werden wir auch nicht im Nenner eine 0 erhalten
 
-#pro Verdopplung bekommt man in etwa 1 zusätzliche Dezimalstelle für kleine n von pi
+#pro Verdopplung bekommt man in etwa 14 genaue Stellen in 26 verdopplungen 
 
 #(d)
 
