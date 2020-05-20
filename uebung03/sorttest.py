@@ -135,6 +135,8 @@ def test_checks():
 def test_builtin_sort(arrays):
     # test the integer arrays
     for original in arrays['int_arrays']:
+        sorted(original)
+        check_integer_sorting(original,sorted(original))
         ... # your code here (test that array is sorted)
 
     # test the Student arrays
@@ -144,6 +146,8 @@ def test_builtin_sort(arrays):
 def test_insertion_sort(arrays):
     # test the integer arrays
     for original in arrays['int_arrays']:
+        insertion_sort_1(original)
+        check_integer_sorting(original,insertion_sort_1(original))
         ... # your code here (test that array is sorted)
 
     # test the Student arrays
