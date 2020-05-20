@@ -223,7 +223,7 @@ def check_student_sorting(original, result, key):
         #         upper = original[j]
         #         assert result.index(lower) < result.index(upper)
         j = result.index(a) #get index of first match
-        assert j==0 or key(result[j-1])<key(a) #assert is was stable sorted // falls eq => a was not stable sorted
+        assert j==0 or key(result[j-1])<key(a) #assert is was stable sorted // falls keys equals => a was not stable sorted
         result.remove(a)       
 
                 
