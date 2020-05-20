@@ -1,6 +1,5 @@
 import pytest
 import random
-from sortalgorithm import insertion_sort
 from random import randint
 
 #(a) ein Fixture ist Hilfscode, der ausgeführt wird, bevor die Testfunktion ausgeführt wird,
@@ -54,12 +53,86 @@ def insertion_sort_1(a, key=lambda x: x):
         while j > 0:
             #we changed < to <=
             #otherwise (<): if equal: current's new pos is before the el at j-i
+            if key(a[j-1]) < key(current):
+                break
+            else:
+                a[j] = a[j-1]
+            j -= 1
+        a[j] = current
+
+##################################################################
+
+def insertion_sort(a, key=lambda x: x):
+    '''
+    Sort the array 'a' in-place.
+
+    Parameter 'key' must hold a function that, given a complicated
+    object, extracts the property to sort by. By default, this
+    is the object itself (useful to sort integers). To sort Students
+    by name, you call:
+        insertion_sort(students, key=Student.get_name)
+    whereas to sort by mark, you use
+        insertion_sort(students, key=Student.get_mark)
+    This corresponds to the behavior of Python's built-in sorting functions.
+    '''
+    for i in range(1, len(a)):
+        current = a[i]
+        j = i
+        while j > 0:
+            #we changed < to <=
+            #otherwise (<): if equal: current's new pos is before the el at j-i
             if key(a[j-1]) <= key(current):
                 break
             else:
                 a[j] = a[j-1]
             j -= 1
         a[j] = current
+
+##################################################################
+
+def merge(left, right, key=lambda x: x):
+    '''
+        Merge Elements of left and right in new array
+    '''
+    res = []
+    i, j = 0, 0
+    while i < len(left) and j < len(right):
+        if key(left[i]) <= key(right[j]):
+            res.append(left[i])
+            i += 1
+        else:
+            res.append(right[j])
+            j += 1
+    while i < len(left):
+        res.append(left[i])
+        i += 1
+    while j < len(right):
+        res.append(right[j])
+        j += 1
+    return res
+
+def merge_sort(a, key=lambda x: x):
+    '''
+    Sort the array 'a' in-place.
+
+    Parameter 'key' must hold a function that, given a complicated
+    object, extracts the property to sort by. By default, this
+    is the object itself (useful to sort integers). To sort Students
+    by name, you call:
+        merge_sort(students, key=Student.get_name)
+    whereas to sort by mark, you use
+        merge_sort(students, key=Student.get_mark)
+    This corresponds to the behavior of Python's built-in sorting functions.
+    '''
+    N = len(a)
+    if N <= 1:
+        return a
+    else:
+        left = a[0:N//2]
+        right = a[N//2:N]
+        leftSorted = merge_sort(left, key)
+        rightSorted = merge_sort(right, key)
+        return merge(leftSorted, rightSorted, key)
 
 ##################################################################
 
@@ -126,6 +199,7 @@ def result ():
 
 #################################################################
 
+@pytest.mark.xfail(reason="jedes Beispiel in test_checks soll einen Fehler erzeugen, der abgefangen wird.")
 def test_checks():
     #fehler für länge
     check_integer_sorting([3,4],[1])
@@ -153,12 +227,18 @@ def test_builtin_sort(arrays):
         result2.sort(key=Student.get_mark)
         check_student_sorting(original, result2, Student.get_mark)
 
+#wir erwarten dass ein Fehler auftritt, da insertion_sort_1 nicht stabil sortiert und wir dies in dem Test pruefen
+@pytest.mark.xfail(reason="insertion_sort_1 is not stable yet and would not pass the test for a stable-check")
 def test_insertion_sort(arrays):
     # test the integer arrays
     for original in arrays['int_arrays']:
         result = list(original)
         insertion_sort_1(result)
         check_integer_sorting(original, result)
+        # test new insertion sort
+        result2 = list(original)
+        insertion_sort(result2)
+        check_integer_sorting(original, result2)
 
     # test the Student arrays
     for original in arrays['student_arrays']:
@@ -168,6 +248,43 @@ def test_insertion_sort(arrays):
         result2 = list(original)
         insertion_sort_1(result2, Student.get_mark)
         check_student_sorting(original, result2, Student.get_mark)
+        #test new insertion sort
+        result3 = list(original)
+        insertion_sort(result3, Student.get_name)
+        check_student_sorting(original, result3, Student.get_name)
+        result4 = list(original)
+        insertion_sort(result4, Student.get_mark)
+        check_student_sorting(original, result4, Student.get_mark)
+
+def test_merge_sort(arrays):
+    for original in arrays['int_arrays']:
+        result = merge_sort(original)
+        check_integer_sorting(original, result)
+    for original in arrays['student_arrays']:
+        result = merge_sort(original, Student.get_name)
+        check_student_sorting(original, result, Student.get_name)
+        result2 = merge_sort(original, Student.get_mark)
+        check_student_sorting(original, result2, Student.get_mark)
+
+def test_hierarchical_sort(arrays):
+    for original in arrays['student_arrays']:
+        #wir testen zuerst merge_sort
+        result = merge_sort(original, Student.get_name)
+        #in result sollten alle Studenten nach Namen sortiert sein
+        #wir testen dies natuerlich nochmal
+        check_student_sorting(original, result, Student.get_name)
+        #dann sortieren wir result nach noten
+        result2 = merge_sort(result, Student.get_mark)
+        #und pruefen, ob von result nach result2 stabil sortiert wurde
+        #was genau dann der fall ist, falls alle Studenten mit gleicher Note nach Namen sortiert sind
+        check_student_sorting(result, result2, Student.get_mark)
+        #und weil das so toll (hoffentlich :D) klappt, machen wir das nochmal mit dem tollen Insertionsort
+        result3 = list(original)
+        insertion_sort(result3, Student.get_name)
+        check_student_sorting(original, result, Student.get_name)
+        result4 = list(result3)
+        insertion_sort(result4, Student.get_mark)
+        check_student_sorting(result3, result4, Student.get_mark)
 
 def check_integer_sorting(original, result):
     '''Parameter 'original' contains the array before sorting,
@@ -202,6 +319,3 @@ def check_student_sorting(original, result, key):
         j = result_c.index(a) #get index of first match
         assert j==0 or key(result_c[j-1])<key(a) #assert is was stable sorted // falls eq => a was not stable sorted
         result_c.remove(a)
-
-#main
-#test_checks()
