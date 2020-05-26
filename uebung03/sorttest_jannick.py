@@ -2,9 +2,12 @@ import pytest
 import random
 from random import randint
 
-#(a) ein Fixture ist Hilfscode, der ausgeführt wird, bevor die Testfunktion ausgeführt wird,
+#(a) Ein Fixture ist Hilfscode, der ausgeführt wird, bevor die Testfunktion ausgeführt wird,
 #  um nicht so viel extra code zu schreiben und das Testen besser von der Initalisierung der Vorbedingungen zu trennen.
 # Man benutzt es, indem man über die Funktion @pytest.fixture schreibt, welche dann vor dem Aufruf einer Testfunktion von pytest aufgerufen wird.
+# Wenn man mit pytest eine Datei aufruft, muss pytest die Testfunktionen festellen können. Hierfuer dient das Prefix test_, alle anderen Funktionen werden nur
+# aufgerufen, falls test_<name> sie aufruft. check_<name> hat für pytest in diesem Sinne keine spezielle Bedeutung, sondern dient uns nur als Hilfe
+# Ergebnisse zu verifizieren und steht somit mehreren beispielsweise Testfunktionen zur Verfügung
 
 
 class Student:
