@@ -65,7 +65,7 @@ def test_archimedes2(k, t_n):
 #für n=27 obere Schätzwert =0.0
 #         unterer Schätzwert = 4.0,
 #  wir haben eine Auslöschung, denn: 
-# in aessereseck wird in der Klammer (sqr(4+(t_n)^2)-2) berechnet. Für ein hinreichend kleines n wird 
+# in t_{2n} wird in der Klammer (sqr(4+(t_n)^2)-2) berechnet. Für ein hinreichend kleines n wird 
 # durch die Addition mit 4, der 64 Bit Speicher für float nicht mehr ausreichen, um die kleinen Nachkommastellen
 #(in unserem Fall: die Zahl 2.6374*10^(-16)) noch darzustellen. Sie werden einfach abgeschnitten und
 #wir erhalten sqr(4)-2 = 0 und damit insgesamt 0 als Ergebnis
