@@ -79,3 +79,5 @@ def test_archimedes2(k, t_n):
 
 #Wir erhalten 14 genaue Stellen in 26 verdopplungen, also verbessert sich pi pro Verdopplung ca. um eine halbe
 #Nachkommastelle
+
+#für die Beweise siehe getextes pdf Dokument
