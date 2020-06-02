@@ -25,17 +25,19 @@ class array_deque:
     def push(self, item):                 # add item at the end
         '''your documentation here'''
         if self._capacity == self._size:  # internal memory is full
-            new_data= [0]*(self._capacity*2)            # your code to double the memory
-            for i in range(self._size+1):
+            new_data= [0]*(self._capacity*2)            #to double the memory
+            for i in range(self._size):               
                 new_data[i]=self._data[i]
             self._capacity= self._capacity*2 #Größe anpassen
             self._data = new_data
+            self._endindex += 1
 
         elif self._endindex == self._capacity-1:
             self._endindex = 0
             self._data[-self._startindex] = item
         else:
             self._data[self._size]=item 
+            self._endindex += 1
         self._size += 1
                                  # your code to insert the new item
         
@@ -44,7 +46,7 @@ class array_deque:
         if self._size == 0:
             raise RuntimeError("pop_first() on empty container")
         else:
-            self._data[self._startindex %(self._capacity) -self._startindex] = 0 #hier reicht zugriff [0]
+            self._data[0] = 0 #hier reicht zugriff [0]
             self._startindex += 1 
             self._size -= 1          
         
@@ -53,7 +55,7 @@ class array_deque:
         if self._size == 0:
             raise RuntimeError("pop_last() on empty container")
         else:
-            self._data[self._endindex %(self._capacity) -self._startindex] = 0
+            self._data[self._endindex -self._startindex] = 0
             self._endindex -= 1
             self._size -= 1
         
@@ -68,11 +70,7 @@ class array_deque:
         if index < 0 or index >= self._size:
             raise RuntimeError("index out of range")
         else: 
-            for i in range (self._size , index-1,-1):
-                self._data[i+self._startindex +1] = self._data[i+self._startindex]
-            self._data[index + self._startindex] = v
-            self._size += 1
-            self._endindex +=1
+            self._data[index] = v
 
         
     def first(self):
@@ -111,4 +109,73 @@ class slow_array_deque(array_deque):
 ###########################################################
 
 def test_array_deque():
-    ...                                   # your tests here
+    a= array_deque()
+    assert a.size() == 0      #neuer Container hat Größe 0
+    assert a.size() <= a.capacity()         #zu jeder Zeit, da könnte man noch was verändern
+                                    
+                                     #vorbereitung für den Test unten: wir müssen uns den vorherigen
+    oldarray = [0]*a.size()         #Zustand merken können
+    for i in range (a.size()):
+        oldarray[i] = a[i]
+
+    a.push(3)
+    assert a.size() == len(oldarray)+1         #Größe hat sich um 1 erhöht
+    assert a[a.size()-1] == 3              #grade eingefügtes Element ist das letzte
+    for i in range (a.size()-1):
+        assert oldarray[i] == a[i]       #alle anderen Elemente haben sich nicht verändert
+    
+    if(len(oldarray)==0):                #das eingefügte element ist das erste
+        assert a[0] == 3
+    else:
+        assert oldarray[0]== a[0]       #das vorherig erste ist auch jetzt das erste element
+    
+    a.pop_last()
+    for i in range(a.size()):
+        assert oldarray[i]== a[i]       #nach pop_last reproduziert container vor dem push
+    
+    a.push(4)
+    a.push(5)
+    oldarray = [0]*a.size()         #Zustand merken können
+    for i in range (a.size()):
+        oldarray[i] = a[i]
+    a[1]= 8
+    oldarray[1]= 8
+    assert len(oldarray)==a.size()      #größe unverändert
+    assert a[1]== 8                     #an indes k steht element v
+    for i in range(a.size()):           #vorherige elemente haben sich nicht verändert
+        assert oldarray[i]== a[i]
+
+
+    oldarray = [0]*a.size()         #Zustand merken können
+    for i in range (a.size()):
+        oldarray[i] = a[i]
+
+    if(a.size()==0):                #Hier weiß ich noch nicht recht
+        with pytest.raises(Exception):    
+            a.pop_last()
+    else:
+        a.pop_last()
+
+    assert a.size() == len(oldarray)-1      #Größe hat sich um 1 verringert
+    for i in range(a.size()):
+        assert oldarray[i]== a[i]
+    
+    oldarray = [0]*a.size()         #Zustand merken können
+    for i in range (a.size()):
+        oldarray[i] = a[i]
+    
+    if(a.size()==0):                
+        with pytest.raises(Exception):    
+            a.pop_first()
+    else:
+        a.pop_first()
+    
+    assert a.size()== len(oldarray)-1
+    for i in range(a.size()):
+        assert a[i]== oldarray[i+1]
+    
+    if(a.size()!=0):
+        assert a.first()== a[0]
+        assert a.last()== a[a.size()-1]
+    
+
