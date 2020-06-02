@@ -102,9 +102,20 @@ class slow_array_deque(array_deque):
 
     def push(self, item):                 # add item at the end
         if self._capacity == self._size:  # internal memory is full
-            ...                           # code to enlarge the memory by one
+            new_data= [0]*(self._capacity+1)            #to enlarge the memory
+            for i in range(self._size):               
+                new_data[i]=self._data[i]
+            self._capacity= self._capacity+1 #Größe anpassen
+            self._data = new_data
+            self._endindex += 1
+
+        elif self._endindex == self._capacity-1:
+            self._endindex = 0
+            self._data[-self._startindex] = item
+        else:
+            self._data[self._size]=item 
+            self._endindex += 1                           # code to enlarge the memory by one
         self._size += 1
-        ...                               # your code to insert the new item
 
 ###########################################################
 
@@ -177,5 +188,39 @@ def test_array_deque():
     if(a.size()!=0):
         assert a.first()== a[0]
         assert a.last()== a[a.size()-1]
+
+#####################################################################
+
+#Hier wollen wir zeigen, dass push die amortisierte konstante Komplexität hat
+import timeit
+import random
+code_to_be_measured = '''
+a.push(4)
+'''
+initialisation = '''
+from __main__ import array_deque
+a = array_deque()
+'''
+t = timeit.Timer(code_to_be_measured, initialisation)
+
+M = 100
+time = t.timeit(M)# run ’code_to_be_measured’ M times
+print("average execution time original array_deque:", time / M)
+
+####################################################################
+
+#Hier wollen wir dasselbe für slow_push() zeigen:
+code_to_be_measured = '''
+a.push(4)
+'''
+initialisation = '''
+from __main__ import slow_array_deque
+a = slow_array_deque()
+'''
+t = timeit.Timer(code_to_be_measured, initialisation)
+
+M = 100
+time = t.timeit(M)# run ’code_to_be_measured’ M times
+print("average execution time slow_array_deque:", time / M)
     
 
