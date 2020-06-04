@@ -106,7 +106,31 @@ class array_deque:
 
 ###########################################################
 
-#class slow_array_deque(array_deque):
+class slow_array_deque(array_deque):
+    def push(self, item):                 # add item at the end
+        '''your documentation here'''
+        if self._capacity == self._size:  # internal memory is full
+            new_data= [0]*(self._capacity+1)            #to double the memory
+            if self._endindex < self._startindex:       #wenn end links von start steht
+                new_data = self._data[self._startindex:self._size]+self._data[0:self._endindex+1]
+                self._data = new_data
+                #setze indexgrenzen neu
+                self._startindex=0              #normales array
+                self._endindex = self._size-1    #altes end würde nicht passen
+
+            else:           #einziger Fall hier: startindex == 0 && endindex == size-1
+                for i in range(self._size):               
+                    new_data[self._startindex + i]=self._data[self._startindex + i]
+                self._data = new_data
+            self._capacity += 1 #Größe anpassen
+
+        #endindex steht ganz am Ende des arrays, wir haben links aber noch platz
+        elif self._endindex == self._capacity-1:
+            self._endindex = 0
+        self._size += 1
+        if self._size != 0 and self._endindex != self._capacity-1:
+            self._endindex= (self._endindex +1)% self._capacity
+        self._data[self._endindex]=item 
 
     
 
