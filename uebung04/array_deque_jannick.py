@@ -1,6 +1,7 @@
 import doctest
 import pytest
 import timeit
+import copy
 
 ###########################################################
 
@@ -32,10 +33,10 @@ class array_deque:
                 self._begin = 0
                 self._end = self.size()-1
             else:
-                print(len(self._data[self._begin:self._end+1]))
+                #print(len(self._data[self._begin:self._end+1]))
                 self._data = self._data[self._begin:self._end+1] + [None] * (self._capacity + self._capacity-self._size)
             #wir kopieren die relative Liste an den Begin der neuen Liste und allokieren +capacity Speicher
-            print(len(self._data))
+            #print(len(self._data))
             self._capacity *= 2
         self._size += 1
         if self.size() != 0 :
@@ -59,31 +60,33 @@ class array_deque:
         self._end = (self._end - 1) % self._capacity
         self._size -= 1
         
-    def __getitem__(self, index):         # __getitem__ implements v = c[index]
+    # __getitem__ implements v = c[index]
+    def __getitem__(self, index):
         '''Get item at index position'''
         if index < 0 or index >= self._size:
             raise RuntimeError("index out of range")
-        return self._data[self._begin+index]                        # your code here
-        
-    def __setitem__(self, index, v):      # __setitem__ implements c[index] = v
+        return self._data[(self._begin+index)% self._capacity]
+
+    # __setitem__ implements c[index] = v    
+    def __setitem__(self, index, v):      
         '''Set item at index position'''
         if index < 0 or index >= self._size:
             raise RuntimeError("index out of range")
-        self._data[self._begin+index] = v                               # your code here
+        self._data[(self._begin+index)% self._capacity] = v
         
     def first(self):
         '''Get first element of Deque'''
-        return self._data[self._begin]                        # your code here
+        return self._data[self._begin]
         
     def last(self):
         '''Get last element of Deque'''
-        return self._data[self._end]                        # your code here
+        return self._data[self._end]
         
     def __eq__(self, other):
         '''returns True if self and other have same size and elements'''
-        if self.size != other.size:
+        if self.size() != other.size():
             return False
-        for i in range(0,self.size):
+        for i in range(0,self.size()):
             if self[i] != other[i]:
                 return False
         return True
@@ -97,55 +100,175 @@ class array_deque:
 class slow_array_deque(array_deque):
 
     def push(self, item):                 # add item at the end
-        if self._capacity == self._size:  # internal memory is full
-            ...                           # code to enlarge the memory by one
+        '''Pushes an element to the end'''
+        if self._capacity == self._size:
+            if self._end < self._begin:
+                end = self._capacity
+                self._data = self._data[self._begin:end] + self._data[0:self._end+1] + [None]
+                self._begin = 0
+                self._end = self.size()-1
+            else:
+                self._data = self._data[self._begin:self._end+1] + [None]
+            self._capacity += 1
         self._size += 1
-        ...                               # your code to insert the new item
+        if self.size() != 0 :
+            self._end = (self._end + 1) % self._capacity
+        self._data[self._end] = item
 
 ###########################################################
 
-def test_array_deque():
-    deque = array_deque()
+#verifies axiomes for a deque
+def check_procedure(deque):
     
-    # size check
-    deque.push(0)
-    assert deque.size() == 1
-    assert deque._end == 0
-
-    # re-alloc check
-    deque.push(1)
-    assert deque.size() == 2
-    assert deque._end == 1
-    assert deque.capacity() == 2
-
-    #queue properties
-    assert 0 == deque.first()
-    deque.pop_first()
-    assert deque._begin == 1
-    assert 1 == deque.first()
-    assert 1 == deque.last()
-    deque.pop_last()
-    assert deque._begin == 1
-    assert deque._end == 0
+    #size check
+    # axiome 1
     assert deque.size() == 0
-    
-    # testing _begin index overflow
-    assert deque.capacity() == 2
-    deque.push(2)
-    assert deque._begin == 1
-    assert deque._end == 1
-    deque.push(3)
-    assert deque._begin == 1
-    assert deque._end == 0 #because (_end+1)%2=0
 
-    #reallocation
-    deque.push(4)
-    assert deque.capacity() == 4
-    #after realloc. _begin is 0 and _end is size-1
-    assert deque._begin == 0
-    assert deque[deque._begin] == 2  # first element is 2
-    assert deque._end == deque.size()-1
-    assert deque[deque._end] == 4 # last element is 4
+    lastsize = 0
+    n = 10
+    #we try to push elements
+    for i in range(n):
+        #copy for axiome 3 (v)
+        old = copy.deepcopy(deque)
 
-def test_complexity():
-    timeit.Timer(stmt="deque.push(0)", setup="from __main__ import array_deque; deque = array_deque();").timeit(number=10000000)
+        #push
+        deque.push(i)
+
+        #axiome 3 (ii)
+        assert deque.last() == i
+
+        #axiome 7 (ii)
+        assert check_last_is_last(deque)
+
+        #axiome 3 (iv)
+        assert deque.first() == 0
+
+        #axiome 7 (i)
+        assert check_first_is_first(deque)
+
+        #axiome 3 (i)
+        assert deque.size() == lastsize+1
+        lastsize += 1
+
+        #axiome 3 (iii)
+        for j in range(0, i):
+            deque[j] = j
+
+        #axiome 2
+        assert deque.size() <= deque.capacity()
+
+        #axiome 3 (v) and axiome 5 (i),(ii)
+        old2 = copy.deepcopy(deque)
+        old2.pop_last()
+        assert old == old2 #equals regarding __eq__
+
+        if(lastsize-1 > 0):
+            #axiome 7 (i)
+            assert check_first_is_first(old2)
+            #axiome 7 (ii)
+            assert check_last_is_last(old2)
+
+    #axiome 4
+    for i in range(n,2*n):
+        assert deque[i-n] != i
+
+        #copy for axiome 4 (iii)
+        old = copy.deepcopy(deque)
+
+        deque[i-n] = i
+        #axiome 4 (i)
+        assert deque.size() == lastsize
+        #axiome 4 (ii)
+        assert deque[i-n] == i
+
+        #axiome 4 (iii)
+        for j in range(0,n):
+            if ( j != i-n):
+                assert old[j] == deque[j]
+
+    for i in range(0,n):
+
+        #copy for axiome 6 (ii)
+        old = copy.deepcopy(deque)
+
+        deque.pop_first()
+
+        if(lastsize-1 > 0):
+            #axiome 7 (i)
+            assert check_first_is_first(deque)
+            #axiome 7 (ii)
+            assert check_last_is_last(deque)
+
+        #axiome 6 (i)
+        assert deque.size() == lastsize - 1
+        lastsize -= 1
+
+        #axiome 6 (ii)
+        for j in range(lastsize):
+            assert deque[j] == old[j+1]
+
+    assert deque.size() == 0
+
+    #expections
+    with pytest.raises(RuntimeError):
+        assert(deque[0])
+    with pytest.raises(RuntimeError):
+        assert(deque.pop_first())
+    with pytest.raises(RuntimeError):
+        assert(deque.pop_last())
+
+#helper functions    
+def check_first_is_first(deque):
+    return deque.first() == deque[0]
+
+def check_last_is_last(deque):
+    return deque.last() == deque[deque.size()-1]
+
+#test slow_array_deque and array_deque
+def test_array_deque():
+    check_procedure(array_deque())
+    check_procedure(slow_array_deque())
+
+#to see output: t-
+def test_complexity_deque():
+    #we fill n lists with sizes 1 to n
+    n = 10000
+    time_avg = 0
+    minT = -1
+    maxT = -1
+    for i in range(1,n+1):
+        #print(i)
+        #t is average time per push in the current measurement
+        t = timeit.Timer(stmt="deque.push(0)", setup="from array_deque_jannick import array_deque; deque = array_deque();").timeit(number=i)/i
+        if t < minT or minT == -1: minT = t
+        if t > maxT: maxT = t
+        time_avg += t
+    time_avg = time_avg / n
+    #values should be nearly equal, if push has amortised constant complexity
+    print("array_deque [if constant: values should be almost equal]:")
+    print("MinT: " + str(minT))
+    print("MaxT: " + str(maxT))
+    print("AvgT: " + str(time_avg))
+    print("N: " + str(n))
+
+def test_complexity_slow_deque():
+    #we fill n lists with sizes 1 to n
+    n = 10000
+    time_avg = 0
+    minT = -1
+    maxT = -1
+    for i in range(1,n+1):
+        #print(i)
+        #t is average time per push in the current measurement
+        t = timeit.Timer(stmt="deque.push(0)", setup="from array_deque_jannick import array_deque; deque = array_deque();").timeit(number=i)/i
+        # we assume an amortized linear complexity, so t is proportional to n
+        if t < minT or minT == -1: minT = t / n
+        if t > maxT: maxT = t / n
+        time_avg += t / n 
+    time_avg = time_avg / n
+    #values should be nearly equal, if push has amortized linear complexity
+    print("slow array_deque [if linear: values should be almost equal]:")
+    print("MinT: " + str(minT))
+    print("MaxT: " + str(maxT))
+    print("AvgT: " + str(time_avg))
+    print("N: " + str(n))
