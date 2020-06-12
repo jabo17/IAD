@@ -21,11 +21,21 @@ class CalcTree:
     # method to parse a term into a calctree
     @staticmethod
     def _parse(term):
+        if(len(term)) == 0:
+            raise ValueError("Term has length null")
         #where is our next operator
         split = CalcTree._splitterm(term)
+        #arithmetic expression with many brackets ((())) or at least one()
+        while split == 0 and term[0] == "(":
+            term = term[1:-1]
+            split = CalcTree._splitterm(term)
         # if split is 0, there is no operator anymore and it only can be a number
         if split == 0:
-            return CalcTree.Number(int(term))
+            try:
+                number = int(term)
+            except ValueError:
+                raise ValueError("no valid arithmetic term")
+            return CalcTree.Number(number)
         
         #split into left and right operands
         leftOperand = term[:split]
@@ -35,34 +45,12 @@ class CalcTree:
         operatorNode = CalcTree.Operator(term[split])
 
         # we need to check if we enter a whole bracket term; then we slice
-        if leftOperand[0] == "(":
-            openB = 1
-            sliceL = True
-            for i in range(1,len(leftOperand)):
-                if  leftOperand[i] == ")":
-                    openB -= 1
-                    if openB == 0 and i != len(leftOperand)-1:
-                        sliceL = False
-                        break
-                elif leftOperand[i] == "(": openB += 1
-            if sliceL: leftOperand = leftOperand[1:-1]
         operatorNode._left = CalcTree._parse(leftOperand)
         
         # we need to check if we enter a whole bracket term; then we slice
-        if rightOperand[0] == "(":
-            openB = 1
-            sliceR = True
-            for i in range(1,len(rightOperand)):
-                if  rightOperand[i] == ")":
-                    openB -= 1
-                    if openB == 0 and i != len(rightOperand)-1:
-                        sliceR = False
-                        break
-                elif rightOperand[i] == "(": openB += 1
-            if sliceR: rightOperand = rightOperand[1:-1]
         operatorNode._right = CalcTree._parse(rightOperand)
         
-        print(operatorNode._operator)
+        #print(operatorNode._operator)
         return operatorNode
 
 
@@ -71,17 +59,18 @@ class CalcTree:
     def _splitterm(term):
         brackets = 0
         operator = 0
+        #(3+4+5)
         for i in range(len(term)):
             if term[i] == "(":
                 brackets += 1
             elif term[i] == ")":
                 brackets -= 1
                 # if brackets < 0 raise value error
-            if brackets == 0:
+            elif brackets == 0:
                 if re.match(r"\+|\-",term[i]):
                     operator = i
                     break
-                elif re.match(r"\*|\/",term[i]) and not re.match(r"\+|\-",term[operator]):
+                elif re.match(r"\*|\/",term[i]): #and not re.match(r"\+|\-",term[operator])
                     operator = i
         return operator
 
@@ -113,17 +102,33 @@ class CalcTree:
         else:
             return leftOperand / rightOperand
 
+## interface von Aufgabenstellung
+def parse(term):
+    return CalcTree(term)
+
+def evaluate(tree):
+    return tree.evaluate()
+
 
 def test_calctree():
 
-    tree = CalcTree("3")
-    assert tree.evaluate() == 3
+    tree = parse("3")
+    assert evaluate(tree) == 3
 
-    tree = CalcTree("3+4*4+5")
-    assert tree.evaluate() == 24
+    tree = parse("(3)")
+    assert evaluate(tree) == 3
+
+    tree = parse("3+4*4+5")
+    assert evaluate(tree) == 24
 
     tree = CalcTree("2*3*4+5")
-    assert tree.evaluate() == 29
+    assert evaluate(tree) == 29
+    
+    with pytest.raises(ValueError):
+        tree = CalcTree("lasdj")
 
-    tree = CalcTree("2*4*(3+(4-7)*8)-(1-6)")
-    assert tree.evaluate() == 2*4*(3+(4-7)*8)-(1-6)
+    tree = parse("2*4*(3+(4-7)*8)-(1-6)")
+    assert evaluate(tree) == 2*4*(3+(4-7)*8)-(1-6)
+
+    tree = parse("(((2*4*(3+(4-7)*8)-(1-6))))")
+    assert evaluate(tree) == 2*4*(3+(4-7)*8)-(1-6)
