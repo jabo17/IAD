@@ -135,9 +135,43 @@ def test_search_tree():
     assert t._size == 5
     assert t.depth() == 5
 
+def test_remove_search_tree():
+    t1 = SearchTree()
+    t2 = SearchTree()
+
+    t1[2] = "C"
+    t1[0] = "A"
+    t1[1] = "B"
+    t1[4] = "E"
+    t1[3] = "D"
+
+    t2[2] = "C"
+    t2[0] = "A"
+    t2[1] = "B"
+    t2[4] = "E"
+    t2[3] = "D"
+
+    assert t1._root._value == t2._root._value
+    assert t1._root._right._value == t2._root._right._value
+    assert t1._root._left._value == t2._root._left._value
+
+    del t1[1]
+    del t1[2]
+
+    del t2[2]
+    del t2[1]
+
+    assert t1._root._value == t2._root._value
+    assert t1._root._right._value == t2._root._right._value
 
 # Aufgabe c)
-# am besten immer das median von keys hinzufügen, dann Liste der keys beim median splitten, und von den Teilslisten das median hinzufügen
+# am besten immer das median von keys hinzufügen, dann Liste der keys beim median splitten, und von den Teilslisten das median hinzufügen.
+# Damit erhalten wir einen ausgewogenen Binärbaum. Um das Median möglichst einfach zu bestimmen, können man die List vorher nach Keys sortieren.
 
 # Aufgabe d)
-# TODO
+# Die Reihenfolge beim Entfernen zweier Schlüssel spielt keine Rolle für die Struktur des Baumes danach. 
+# Dies liegt an der Einhaltung der Suchbaumbedingung. Das dies so ist ist für den Fall X,Y sind Blätter direkt klar.
+# Sind X,Y in unterschiedlichen Teilbäumen ist auch direkt klar, dass die Reihenfolge des Entfernens keinen Unterschied macht.
+# Weiter gibt es noch den Fall, wo etwa X von Y Vater ist (anders herum analog): da wir jedoch aufgrund der Suchbaumbedingung eineindeutige Vertreter
+# bestimmen wenn X oder Y gelöscht wird und die Ordnung über die Schlüssel total ist (<,> und jeder Key ist einzigartig), macht auch hier die Löschreihenfolge
+# keinen Unterschied.

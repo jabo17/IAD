@@ -1,4 +1,5 @@
 import pytest
+#we use regex strings to match math operators
 import re
 
 class CalcTree:
@@ -74,7 +75,7 @@ class CalcTree:
                     operator = i
         return operator
 
-    # @param node is a operator node in a tree
+    # @param node is an operator node in a tree
     # it recursively evaluates the calctree
     @staticmethod
     def _evaluate_tree(node):
@@ -102,14 +103,14 @@ class CalcTree:
         else:
             return leftOperand / rightOperand
 
-## interface von Aufgabenstellung
+## interface given by exercise
 def parse(term):
     return CalcTree(term)
 
 def evaluate(tree):
     return tree.evaluate()
 
-
+# test function for calctree
 def test_calctree():
 
     tree = parse("3")
