@@ -47,9 +47,9 @@ class RandomTreap(SearchTree):
 
     @staticmethod
     def _check_parent_root(node):
-        if node._left._priority < node._priority:
+        if node._left._priority > node._priority:
             node = RandomTreap._tree_rotate_right(node._left)
-        elif node._right._priority < node._priority:
+        elif node._right._priority > node._priority:
             node = RandomTreap._tree_rotate_left(node._right)
         return node
  
