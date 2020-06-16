@@ -20,10 +20,8 @@ class TreapBase(SearchTree):
                     value
                     priority
             """
-            self._key = key
+            super().__init__(key, value)
             self._priority = priority
-            self._value = value
-            self._left = self._right = None
     
     def __init__(self, flag):
         """
