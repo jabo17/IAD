@@ -304,35 +304,54 @@ def text_list():
         "helmholtz-naturwissenschaften.txt"
     ]
 
-def test_word_dic(text_list):
+@pytest.fixture
+def texts(text_list):
+    texts = []
     for filename in text_list:
         s = open(filename, encoding="latin-1").read()
         for k in ',;.:-"\'!?':
             s = s.replace(k, '')
         s = s.lower()
         text = s.split()
+        texts.append(text)
+    return texts
 
+def test_word_dic(texts):
+    print("treap dics")
+    for text in texts:
         dt = DynamicTreap()
         rt = RandomTreap()
         for w in text:
             dt[w] = None
             rt[w] = None
+        print(dt.top(100)[0:100])
+        print(dt.depth())
+        print(len(dt))
+        print(rt.depth())
+        print(len(rt))
 
 ## aufgabe g)
-def test_cleaned_word_dic(text_list):
-    stopword = open(file)
+def test_cleaned_word_dic(texts):
+    print("cleaned treap dics")
+    stopwords = open("stopwords.txt", encoding="latin-1").read()
+    stopwords = stopwords.split()
+    # rather than a set, we use our one dynamic tree
     stopword_tree = DynamicTreap()
-    for filename in text_list:
-        s = open(filename, encoding="latin-1").read()
-        for k in ',;.:-"\'!?':
-            s = s.replace(k, '')
-        s = s.lower()
-        text = s.split()
-
+    for w in stopwords:
+        stopword_tree[w] = True
+    for text in texts:
         dt = DynamicTreap()
         rt = RandomTreap()
         for w in text:
-            dt[w] = None
-            rt[w] = None
+            try:
+                stopword_tree[w]
+            except KeyError:
+                dt[w] = None
+                rt[w] = None
+        print(dt.top(20)[0:100])
+        print(dt.depth())
+        print(len(dt))
+        print(rt.depth())
+        print(len(rt))
 
 ## aufgabe f)
