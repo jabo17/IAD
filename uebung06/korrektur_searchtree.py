@@ -117,6 +117,7 @@ class SearchTree:
         return pred
 
 
+
 def test_search_tree():
     t = SearchTree()
     assert len(t) == 0
@@ -140,34 +141,37 @@ def test_search_tree():
     assert t._size == 5
     assert t.depth() == 5
 
+#gegen beispiel
 def test_remove_search_tree():
     t1 = SearchTree()
     t2 = SearchTree()
 
-    t1[2] = "C"
-    t1[0] = "A"
-    t1[1] = "B"
-    t1[4] = "E"
-    t1[3] = "D"
+    t1[0] = None
+    t1[4] = None #X
+    t1[2] = None
+    t1[5] = None #Y
+    t1[1] = None
+    t1[3] = None
 
-    t2[2] = "C"
-    t2[0] = "A"
-    t2[1] = "B"
-    t2[4] = "E"
-    t2[3] = "D"
+    t2[0] = None
+    t2[4] = None #X
+    t2[2] = None
+    t2[5] = None #Y
+    t2[1] = None
+    t2[3] = None
 
-    assert t1._root._value == t2._root._value
-    assert t1._root._right._value == t2._root._right._value
-    assert t1._root._left._value == t2._root._left._value
+    assert t1._root._right._key == t2._root._right._key #4
+    assert t1._root._right._left._key == t2._root._right._left._key #3
+    assert t1._root._right._right._key == t2._root._right._right._key #5
 
-    del t1[1]
-    del t1[2]
+    del t1[4]
+    del t1[5]
 
-    del t2[2]
-    del t2[1]
+    del t2[5]
+    del t2[4]
 
-    assert t1._root._value == t2._root._value
-    assert t1._root._right._value == t2._root._right._value
+    assert t1._root._right._key == 3 # X dann Y
+    assert t2._root._right._key == 2 # Y dann X
 
 # Aufgabe c)
 # am besten immer das median von keys hinzufügen, dann Liste der keys beim median splitten, und von den Teilslisten das median hinzufügen.
