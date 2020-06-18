@@ -1,5 +1,6 @@
 from searchtreeclass import SearchTree
 import random
+import pytest
  
 
 class TreapBase(SearchTree):
@@ -148,6 +149,21 @@ class DynamicTreap(TreapBase):
                 node._right = TreapBase.check_priority(node._right)
             return found_element
     
+    def top(self,min_priority):
+        list =[]
+        DynamicTreap._top(self._root, min_priority, list)
+        return list
+    
+    @staticmethod
+    def _top(node,min_priority, list):
+        if node._priority >= min_priority:
+            list.append((node._key,node._priority))
+            list = DynamicTreap._top(node._left, min_priority, list)
+            list = DynamicTreap._top(node._right, min_priority, list)
+            return list
+        else:
+            return list
+    
 
 def test_random_treap():
     t = RandomTreap()
@@ -164,8 +180,86 @@ def test_random_treap():
         assert t._root._left._key == 0
     else: 
         assert t._root._right._key == 1
+    
+    t[1] = 1
+    assert len(t) == 1
+    assert t[1] == 1
+    with pytest.raises(KeyError):
+        v = t[2]
+    
+    t[0] = 0
+    assert len(t) == 2
+    assert t[0] == 0
+    assert t[1] == 1
+    
+    t[1] = 11                # overwrite value of existing key
+    assert len(t) == 2
+    assert t[0] == 0
+    assert t[1] == 11
+    
+    t[2] = 2
+    assert len(t) == 3
+    assert t[0] == 0
+    assert t[1] == 11
+    assert t[2] == 2
+    
+    del t[2]                 # delete leaf
+    assert len(t) == 2
+    assert t[0] == 0
+    assert t[1] == 11
+    with pytest.raises(KeyError):
+        v = t[2]
+        
+    del t[1]                 # replace node with left child
+    assert len(t) == 1
+    assert t[0] == 0
+    with pytest.raises(KeyError):
+        v = t[1]
 
-    assert t.depth() == 2
+    with pytest.raises(KeyError):
+        del t[1]             # delete invalid key
+        
+    t = SearchTree()
+    t[0]=0
+    t[3]=3
+    t[1]=1
+    t[2]=2
+    t[4]=4
+    assert len(t) == 5
+    for k in [0, 1, 2, 3, 4]:
+        assert t[k] == k
+        
+    del t[3]                 # replace node with predecessor
+    with pytest.raises(KeyError):
+        v = t[3]
+    assert len(t) == 4
+    for k in [0, 1, 2, 4]:
+        assert t[k] == k
+        
+    del t[2]                 # replace node with predecessor
+    with pytest.raises(KeyError):
+        v = t[2]
+    assert len(t) == 3
+    for k in [0, 1, 4]:
+        assert t[k] == k
+        
+    del t[1]                 # replace node with right child
+    with pytest.raises(KeyError):
+        v = t[1]
+    assert len(t) == 2
+    for k in [0, 4]:
+        assert t[k] == k
+        
+    del t[4]                 # remove leaf
+    with pytest.raises(KeyError):
+        v = t[4]
+    assert len(t) == 1
+    assert t[0] == 0
+        
+    del t[0]                 # remove leaf
+    with pytest.raises(KeyError):
+        v = t[0]
+    assert len(t) == 0
 
     t[-1] = "C"
     #grey box for priority
@@ -179,6 +273,25 @@ def test_random_treap():
         else:
             assert a._priority > a._right._priority 
             a = t._root._right  
+
+#aufgabe (g)
+def test_cleaned_treap():
+    filename = "casanova-erinnerungen-band-2.txt"
+    filestopwords = "stopwords.txt"
+    w = open(filestopwords, encoding= "latin-1").read()
+    s = open(filename, encoding="latin-1").read()
+    for k in ',;.:-"\'!?':
+        s= s.replace(k, '') 
+        w = w.replace(k, 'k')# Sonderzeichen entfernen
+    s = s.lower() # Alles klein schreiben
+    stoptext = w.split()
+    text = s.split() #string in Array von Wörtern umwandeln
+    cleaned_treap = DynamicTreap()
+    for word in text:
+        if word in stoptext:
+            text.remove(word)
+    for word in text:
+        cleaned_treap[word] = None
 
 ##aufgabe (e)
 def compare_trees(tree1,tree2):
