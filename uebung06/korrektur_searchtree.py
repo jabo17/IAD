@@ -142,6 +142,7 @@ def test_search_tree():
     assert t.depth() == 5
 
 #gegen beispiel
+#comment: wir haben das Gegenbeispiel fuer d) angepasst, sodass es den Beweis zeigt
 def test_remove_search_tree():
     t1 = SearchTree()
     t2 = SearchTree()
@@ -177,8 +178,9 @@ def test_remove_search_tree():
 # am besten immer das median von keys hinzufügen, dann Liste der keys beim median splitten, und von den Teilslisten das median hinzufügen.
 # Damit erhalten wir einen ausgewogenen Binärbaum. Um das Median möglichst einfach zu bestimmen, können man die List vorher nach Keys sortieren.
 
-# Aufgabe d) (Korrektur)
-# Die Struktur des Baumes, nachdem man X u. Y geloescht hat, hängt im Allg. von der Reihenfolge ab, ob erst X und dann Y oder umgekehrt geloescht wurde.
+# Aufgabe d) (#comment)
+# Die Struktur des Baumes, nachdem man X u. Y geloescht hat, hängt im Allg. von der Reihenfolge ab (in unserer Implementation),
+# ob erst X und dann Y oder umgekehrt geloescht wurde.
 # Bsp: Sei X ein Knoten mit einem nicht-leeren linken Teilbaum, und einem rechten Teilbaum bestehend aus einem Knoten Y.
 # (Fall 1) Loesche erst Y dann X: Es tritt erst Loeschfall 1 und dann 2 ein.
 # (Fall 2) Loesche erst X dann Y: Es tritt erst Loeschfall 3 und dann 2 oder 1 ein.

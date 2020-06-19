@@ -97,7 +97,7 @@ class TreapBase(SearchTree):
                 if node._left._priority > node._priority:
                     #right rotate
                     node =TreapBase._tree_rotate_right(node)
-                    #now: wring priority is in right tree, so check this
+                    #now: wrong priority is in right tree, so check this
                     node._right =TreapBase.check_priority(node._right)
             else:
                 if node._priority < node._right._priority:
@@ -105,7 +105,7 @@ class TreapBase(SearchTree):
                     node = TreapBase._tree_rotate_left(node)
                     #now: wrong priority is in left tree, so check this
                     node._left = TreapBase.check_priority(node._left)
-        elif node._left is not None and node._right is None:
+        elif node._left is not None:
             if node._priority < node._left._priority:
                 node = TreapBase._tree_rotate_right(node)
                 node._right = TreapBase.check_priority(node._right)
@@ -126,6 +126,17 @@ class RandomTreap(TreapBase):
 class DynamicTreap(TreapBase):
     def __init__(self):
         super().__init__("is_dynamic_treap")
+    
+    def __getitem__(self, key):
+        """
+            Search for a key in the DynamicTreap.
+        """
+        node = DynamicTreap._tree_find(self._root, key)
+        if node is None:
+            raise KeyError("key not found")
+        # heap condition for root could not longer be met
+        self._root = TreapBase.check_priority(self._root)
+        return node._value
     
     @staticmethod
     def _tree_find(node, key):
@@ -295,50 +306,47 @@ def test_cleaned_treap():
 
 ##aufgabe (e)
 def compare_trees(tree1,tree2):
-    if tree1._root is None and tree2._root is None:
+    return compare_nodes(tree1._root, tree2._root)
+    
+
+def compare_nodes(node1,node2):
+    if node1 is None and node2 is None:
         return True
-    elif tree1._root._key == tree2._root._key: #and tree1._root._value == tree2._root._value
-        var_left = compare_trees(tree1._left,tree2._left)
-        var_right = compare_trees(tree1._right, tree2._right)
-        if var_left == True and var_right is True:
-            return True
-        else:
-            return False
+    elif node1._key == node2._key and node1._value == node2._value:
+        return compare_nodes(node1._left,node2._left) and compare_nodes(node1._right, node2._right)
     else:
         return False
+
 #aufgabe (f)
 def tree_element_depth(node, key, numerator):           # internal implementation
-        if node is None:
-            return 0
-        if node._key == key:
-            #if "first" root._key is already the right one
-            numerator +=1
-            return numerator
-        if key < node._key:
-            numerator +=1
-            return tree_element_depth(node._left, key, numerator)  #we increment the numerator if key is in tree 
-        else:
-            numerator +=1
-            return tree_element_depth(node._right, key, numerator)
+    if node is None:
+        return 0
+    if node._key == key:
+        #if "first" root._key is already the right one
+        return numerator +1
+    if key < node._key:
+        numerator +=1
+        return tree_element_depth(node._left, key, numerator)  
+    else:
+        numerator +=1
+        return tree_element_depth(node._right, key, numerator)
 
-def average_depth(tree, text):
+def average_depth(tree, list):
     sum = 0
-    for word in text:
+    for word in list:
         word_depth = tree_element_depth(tree._root, word, 0)
-        sum += word_depth
-        text.remove(word)    
+        sum += word_depth  
     n = len(tree)
     return sum/n
 
-def average_time(tree, text):
+def average_time(tree, list, N): #N = len(text we want to evaluate)
     sum = 0
-    all_words = len(text)
-    for word in text:
+    for word in list:
         word_depth = tree_element_depth(tree._root, word, 0)
         N_w = 0
         for word in text:
             N_w +=1
-        sum += word_depth* (N_w/all_words)
+        sum += word_depth* (N_w/N)
         text.remove(word)
     return sum
 

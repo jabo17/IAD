@@ -1,12 +1,13 @@
 #
-# treap implementation by Jannick
-# email: ak236@stud.uni-heidelberg.de
+# treap implementation by Mona, Jannick
+#
+# test_texts should be allocated in same dictionary
 #
 
-from searchtreeclass import SearchTree, test_search_tree
+from korrektur_searchtree import SearchTree
 import pytest
 import random
-
+import numpy
 #template for treap implementations
 class TreapBase(SearchTree):
 
@@ -247,20 +248,190 @@ class DynamicTreap(TreapBase):
 
 ## aufgabe e
 ## return true, if both trees are equally sorted and have equal elements
-def compare_trees(tree1, tree2):
-    ...
+def compare_trees(tree1,tree2):
+    return compare_nodes(tree1._root, tree2._root)
+    
 
-############## PyTest ##############
+def compare_nodes(node1,node2):
+    if node1 is None and node2 is None:
+        return True
+    elif node1._key == node2._key: #and node1._value == node2._value
+        return compare_nodes(node1._left,node2._left) and compare_nodes(node1._right, node2._right)
+    else:
+        return False
 
-def test_random_treap():
-    ##whitebox test: test_search_tree
-    ##gray box test:
-    ...
+############ aufgabe f) ####################
+def average_depth(tree):
+    pairs = key_value_depths(tree)
+    sum_depth = 0
+    for (matches, depth) in pairs:
+        sum_depth += depth
+    n = len(tree)
+    return sum_depth/n
+
+def average_access_time(tree, N): # N = len(text)
+    pairs = key_value_depths(tree)
+    sum = 0
+    for (matches, depth) in pairs:
+        sum += (matches/N) * depth
+    n = len(tree)
+    return sum/n   
+
+def _key_value_depth(node,pairs, depth):
+    """
+        get all (key, value, depth)pairss of a node
+    """
+    if node is not None:
+        pairs.append((node._value, depth+1))
+        _key_value_depth(node._left,pairs, depth+1)
+        _key_value_depth(node._right,pairs, depth+1)
+
+def key_value_depths(tree):
+    """
+        get all (key, value, depth)pairss of a tree
+    """
+    pairs = []
+    _key_value_depth(tree._root,pairs, -1)
+    return pairs
+
+############## Unit PyTests ##############
+
+def check_treap(getTreapInstance):
+
+    t = getTreapInstance()
+    assert len(t) == 0
+    
+    t[1] = 1
+    assert len(t) == 1
+    assert t[1] == 1
+    with pytest.raises(KeyError):
+        v = t[2]
+    
+    t[0] = 0
+    assert len(t) == 2
+    assert t[0] == 0
+    assert t[1] == 1
+    
+    t[1] = 11                # overwrite value of existing key
+    assert len(t) == 2
+    assert t[0] == 0
+    assert t[1] == 11
+    
+    t[2] = 2
+    assert len(t) == 3
+    assert t[0] == 0
+    assert t[1] == 11
+    assert t[2] == 2
+    
+    del t[2]                 # delete leaf
+    assert len(t) == 2
+    assert t[0] == 0
+    assert t[1] == 11
+    with pytest.raises(KeyError):
+        v = t[2]
+        
+    del t[1]                 # replace node with left child
+    assert len(t) == 1
+    assert t[0] == 0
+    with pytest.raises(KeyError):
+        v = t[1]
+
+    with pytest.raises(KeyError):
+        del t[1]             # delete invalid key
+        
+    t = getTreapInstance()
+    t[0]=0
+    t[3]=3
+    t[1]=1
+    t[2]=2
+    t[4]=4
+    assert len(t) == 5
+    for k in [0, 1, 2, 3, 4]:
+        assert t[k] == k
+        
+    del t[3]                 # replace node with predecessor
+    with pytest.raises(KeyError):
+        v = t[3]
+    assert len(t) == 4
+    for k in [0, 1, 2, 4]:
+        assert t[k] == k
+        
+    del t[2]                 # replace node with predecessor
+    with pytest.raises(KeyError):
+        v = t[2]
+    assert len(t) == 3
+    for k in [0, 1, 4]:
+        assert t[k] == k
+        
+    del t[1]                 # replace node with right child
+    with pytest.raises(KeyError):
+        v = t[1]
+    assert len(t) == 2
+    for k in [0, 4]:
+        assert t[k] == k
+        
+    del t[4]                 # remove leaf
+    with pytest.raises(KeyError):
+        v = t[4]
+    assert len(t) == 1
+    assert t[0] == 0
+        
+    del t[0]                 # remove leaf
+    with pytest.raises(KeyError):
+        v = t[0]
+    assert len(t) == 0
+
+    t[-1] = "C"
+
+    # test random access
+    # depending on the tree priorities change
+    # we check the priorities later
+    for i in range(20):
+        with pytest.raises(KeyError):
+            t[random.randint(0, 5)]
+
+    #grey box for priority (heap condition)
+    check_priority(t._root)
+    #grey box for search tree condition
+    check_bin_tree_cond(t._root)
+
+def check_priority(a):
+    """
+        verifies heap condition for (sub) tree 
+    """
+    if a is None:
+        return True
+    elif a._right is None and a._left is None:
+        a = None
+        check_priority(a)
+    elif a._right is None:
+        assert a._priority > a._left._priority
+        return check_priority(a._left)
+    elif a._left is None:
+        assert a._priority > a._right._priority
+        return check_priority(a._right)
+    else:
+        assert a._priority > a._right._priority and a._priority > a._left._priority
+        return check_priority(a._right) and check_priority(a._left) 
+
+def check_bin_tree_cond(a):
+    """
+        verifies binary search tree condition for (sub) tree
+    """
+    if a is None:
+        return True
+    if a._left is not None:
+        assert a._left._key < a._key
+    if a._right is not None:
+        assert a._right._key > a._key
+    return check_bin_tree_cond(a._left) and check_bin_tree_cond(a._right)
 
 def test_dynamic_treap():
-    ##whitebox test: test_search_tree
-    ##gray box test:
-    
+
+    check_treap(lambda: DynamicTreap())    
+
+
+    # test dynamicTreap (especially for top())
     tree = DynamicTreap()
     tree[5] = 5
     tree[2] = 2
@@ -293,6 +464,29 @@ def test_dynamic_treap():
     assert (8,1) in top
     assert (3,1) in top
 
+def test_random_treap():
+    check_treap(lambda: RandomTreap())  
+
+# print comparison
+def print_compare_trees(dt, rt, text):
+    # wir geben die 100 ersten woerter von top aus
+    print("Max 100 Woerter mit groesster Prioritaet, ermittelt mittels dt.top(20): ")
+    print(sorted(dt.top(20), reverse= True , key= lambda x: x[1])[0:100])
+    print("Anzahl (unterschiedlicher) Woerter in DT: ", len(dt))
+    print("Anzahl (unterschiedlicher) Woerter in RT: ", len(rt))
+    assert len(dt) == len(rt)
+    print("Tiefe eines perfekt balancierten Baumes: ", numpy.log2(len(dt)))
+    print("Tiefe von DT: ", dt.depth())
+    print("Tiefe von RT: ", rt.depth())
+
+    #aufgabe f
+    N= len(text)
+    print("Avg. Depth of RT: ", average_depth(rt))
+    print("Avg. Depth or DT: ", average_depth(dt))
+    #anhand der Ausgabe sehen wir: average_depth(rt) < average_depth(dt)
+    print("Avg. Access Time of RT: ", average_access_time(rt, N))
+    print("Avg. Access Time of DT: ", average_access_time(dt, N))
+
 #aufgabe d)
 @pytest.fixture
 def text_list():
@@ -314,42 +508,50 @@ def texts(text_list):
         texts.append(text)
     return texts
 
-def test_word_dic(texts):
+#to get output: use -s with pytest
+def test_word_dic(texts, text_list):
     print("treap dics")
-    for text in texts:
-        dt = DynamicTreap()
-        rt = RandomTreap()
-        for w in text:
-            dt[w] = None
-            rt[w] = None
-        print(dt.top(100)[0:100])
-        print(dt.depth())
-        print(len(dt))
-        print(rt.depth())
-        print(len(rt))
-
-## aufgabe g)
-def test_cleaned_word_dic(texts):
-    print("cleaned treap dics")
-    stopwords = open("stopwords.txt", encoding="latin-1").read()
-    stopwords = stopwords.split()
-    # rather than a set, we use our one dynamic tree
-    stopword_tree = DynamicTreap()
-    for w in stopwords:
-        stopword_tree[w] = True
-    for text in texts:
+    for i in range(len(texts)):
+        text = texts[i]
+        print("######## ", text_list[i], " ########")
         dt = DynamicTreap()
         rt = RandomTreap()
         for w in text:
             try:
+                found = rt[w]
+            except:
+                found = 0
+            # the value is a counter apperances in the tree
+            dt[w] = found + 1
+            rt[w] = found + 1
+        print_compare_trees(dt, rt, text)
+
+## aufgabe g)
+def test_cleaned_word_dic(texts, text_list):
+    print("cleaned treap dics")
+    stopwords = open("stopwords.txt", encoding="latin-1").read()
+    stopwords = stopwords.split()
+    # rather than a set, we use our one dynamic treap
+    stopword_tree = DynamicTreap()
+    for w in stopwords:
+        stopword_tree[w] = True
+    for i in range(len(texts)):
+        text = texts[i]
+        print("######## ", text_list[i], " ########")
+        dt = DynamicTreap()
+        rt = RandomTreap()
+        for w in text:                
+            try:
+                #try to increment priority in stopword_tree of key w
                 stopword_tree[w]
             except KeyError:
-                dt[w] = None
-                rt[w] = None
-        print(dt.top(20)[0:100])
-        print(dt.depth())
-        print(len(dt))
-        print(rt.depth())
-        print(len(rt))
-
-## aufgabe f)
+                # w is not in stopword_tree
+                try:
+                    found = rt[w]
+                except:
+                    found = 0
+                # the value is a counter apperances in the tree
+                dt[w] = found + 1
+                rt[w] = found + 1
+        print("####### Cleaned Text #######")
+        print_compare_trees(dt, rt, text)
