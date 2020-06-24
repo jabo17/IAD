@@ -142,15 +142,19 @@ def optimal_ingredients(recipes: dict, inverse_recipes: dict) -> list:
     ordered_ingredients = sorted(inverse_recipes_optimized, key=lambda x: len(inverse_recipes_optimized[x]),
                                  reverse=True)
 
-    print(len(ordered_ingredients))
+    """
+        DEBUG MODE
+        
+        print(len(ordered_ingredients))
 
-    print(len(inverse_recipes_optimized[ordered_ingredients[0]]))
-    print(len(inverse_recipes_optimized[ordered_ingredients[1]]))
-    print(len(inverse_recipes_optimized[ordered_ingredients[2]]))
-    print(len(inverse_recipes_optimized[ordered_ingredients[3]]))
-    print(len(inverse_recipes_optimized[ordered_ingredients[4]]))
-    print(len(inverse_recipes_optimized[ordered_ingredients[5]]))
-    print(len(inverse_recipes_optimized[ordered_ingredients[-1]]))
+        print(len(inverse_recipes_optimized[ordered_ingredients[0]]))
+        print(len(inverse_recipes_optimized[ordered_ingredients[1]]))
+        print(len(inverse_recipes_optimized[ordered_ingredients[2]]))
+        print(len(inverse_recipes_optimized[ordered_ingredients[3]]))
+        print(len(inverse_recipes_optimized[ordered_ingredients[4]]))
+        print(len(inverse_recipes_optimized[ordered_ingredients[5]]))
+        print(len(inverse_recipes_optimized[ordered_ingredients[-1]]))
+    """
 
     maximum = 0
     combination = []
@@ -159,32 +163,32 @@ def optimal_ingredients(recipes: dict, inverse_recipes: dict) -> list:
     limit_counter = 0
     for a in range(0, len(ordered_ingredients) - 4):
         if len(inverse_recipes_optimized[ordered_ingredients[a]]) < k ** 5:
-            print("a", a)
+            # print("a", a)
             break
         for b in range(a + 1, len(ordered_ingredients) - 3):
             if len(inverse_recipes_optimized[ordered_ingredients[b]]) < k ** 4:
-                print("b", b)
+                # print("b", b)
                 break
             for c in range(b + 1, len(ordered_ingredients) - 2):
                 if len(inverse_recipes_optimized[ordered_ingredients[c]]) < k ** 3:
-                    print("c", c)
+                    # print("c", c)
                     break
                 for d in range(c + 1, len(ordered_ingredients) - 1):
                     if len(inverse_recipes_optimized[ordered_ingredients[d]]) < k ** 3:
-                        print("d", d)
+                        # print("d", d)
                         break
                     for e in range(d + 1, len(ordered_ingredients)):
                         if limit == limit_counter:
                             return [ordered_ingredients[x] for x in combination]
                         if len(inverse_recipes_optimized[ordered_ingredients[e]]) < k ** 3:
-                            print("e", e)
+                            # print("e", e)
                             break
                         result = possible_cocktails(inverse_recipes, [ordered_ingredients[x] for x in [a, b, c, d, e]])
                         # print([a, b, c, d, e], len(result), sep=": ")
                         if len(result) > maximum:
                             maximum = len(result)
                             combination = [a, b, c, d, e]
-                            print([ordered_ingredients[x] for x in [a, b, c, d, e]], len(result), sep=": ")
+                            # print([ordered_ingredients[x] for x in [a, b, c, d, e]], len(result), sep=": ")
                         limit_counter += 1
 
     return [ordered_ingredients[x] for x in combination]
