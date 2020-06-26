@@ -1,8 +1,7 @@
 # -*- coding: utf8 -*-
 """
  AlDa SS 20 - Uni Heidelberg
- Implementierung der cocktails.py von Jannick
- E-Mail: ak238@stud.uni-heidelberg.de
+ Implementierung der cocktails.py 
 """
 
 import pytest
@@ -14,6 +13,7 @@ import copy
 FILE_COCKTAILS_INVERSE = "cocktails_inverse_jannick.json"
 FILE_COCKTAILS = "cocktails.json"
 
+#set ingredients in normalized format, they need to be in all_ingredients
 IGNORE_LIST = ["wasser", "pfeffer", "zucker", "eiswürfel", "crushedice", "orangensaft", "wodka"]
 
 
@@ -24,7 +24,7 @@ def all_ingredients(recipes: dict) -> list:
     Return all normalized ingredients found in recipes.
 
     Args:
-        recipes: indexed list of recipes
+        recipes: name->recipe dict
 
     Returns:
         list: all_ingredients
@@ -36,7 +36,7 @@ def all_ingredients(recipes: dict) -> list:
         for ingredient in recipe["ingredients"]:
             ingredient = normalize_string(ingredient)
             if ingredient not in ingredients:
-                ingredients.append(normalize_string(ingredient))
+                ingredients.append(ingredient)
 
     return ingredients
 
@@ -84,8 +84,6 @@ def cocktails_inverse(recipes: dict) -> dict:
         for ingredient in recipe["ingredients"]:
             inverse_recipes[normalize_string(ingredient)].append(recipes_name)
 
-    # TODO export inverse_recipes into FILE_COCKTAILS_INVERSE
-
     export_inverse_recipes(inverse_recipes)
 
     return inverse_recipes
@@ -104,6 +102,10 @@ def possible_cocktails(inverse_recipes: dict, available_ingredients: list) -> li
     """
     possible_recipes = list()
 
+    for ingredient in IGNORE_LIST:
+        if ingredient not in available_ingredients:
+            available_ingredients.append(ingredient)
+
     for ingredient in available_ingredients:
         if ingredient in inverse_recipes:
             for recipe in inverse_recipes[ingredient]:
@@ -111,13 +113,12 @@ def possible_cocktails(inverse_recipes: dict, available_ingredients: list) -> li
                     possible_recipes.append(recipe)
     for ingredient in inverse_recipes.keys():
         if len(possible_recipes) == 0: break
-        if ingredient not in available_ingredients and ingredient not in IGNORE_LIST:
+        if ingredient not in available_ingredients:
             for recipe in inverse_recipes[ingredient]:
                 if recipe in possible_recipes:
                     possible_recipes.remove(recipe)
 
     return possible_recipes
-
 
 def optimal_ingredients(recipes: dict, inverse_recipes: dict) -> list:
     """
@@ -158,8 +159,10 @@ def optimal_ingredients(recipes: dict, inverse_recipes: dict) -> list:
 
     maximum = 0
     combination = []
+    # Constant for recipe minimum of ingredient
     k = 2
-    limit = 20000
+    #Configure Iteration Limit
+    limit = 2000
     limit_counter = 0
     for a in range(0, len(ordered_ingredients) - 4):
         if len(inverse_recipes_optimized[ordered_ingredients[a]]) < k ** 5:
@@ -174,13 +177,13 @@ def optimal_ingredients(recipes: dict, inverse_recipes: dict) -> list:
                     # print("c", c)
                     break
                 for d in range(c + 1, len(ordered_ingredients) - 1):
-                    if len(inverse_recipes_optimized[ordered_ingredients[d]]) < k ** 3:
+                    if len(inverse_recipes_optimized[ordered_ingredients[d]]) < k ** 2:
                         # print("d", d)
                         break
                     for e in range(d + 1, len(ordered_ingredients)):
                         if limit == limit_counter:
                             return [ordered_ingredients[x] for x in combination]
-                        if len(inverse_recipes_optimized[ordered_ingredients[e]]) < k ** 3:
+                        if len(inverse_recipes_optimized[ordered_ingredients[e]]) < k:
                             # print("e", e)
                             break
                         result = possible_cocktails(inverse_recipes, [ordered_ingredients[x] for x in [a, b, c, d, e]])
@@ -234,7 +237,7 @@ def export_inverse_recipes(inverse_recipes: dict) -> bool:
 def test_normalize_string():
     assert normalize_string("sahne (flüssig)") == "sahne"
     assert normalize_string("Sahne (flüssig meister soße) (noch so eine Klammer)") == "sahne"
-    assert normalize_string("Schoko-Sahne") == "schoko-sahne"
+    assert normalize_string("Schoko-Sahne") == "schokosahne"
 
 
 def test_all_ingredients():
@@ -293,8 +296,3 @@ def test_optimal_ingredients():
 
     for r in result:
         print(r)
-
-
-# run: test optimal ingredients
-if __name__ == "__main__":
-    test_optimal_ingredients()

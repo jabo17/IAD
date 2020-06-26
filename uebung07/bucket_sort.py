@@ -1,191 +1,160 @@
-"""
-    This file contains an implementation of Bucket Sort
-
-    Jannick Borowitz
-    Email: ak238@stud.uni-heidelberg.de
-"""
-import pytest
 import random
 import math
-import copy
 import timeit
 
-
-def quantize(r: int, M: int) -> int:
-    '''
-    Maps key r in [0,1) to a bucket [0,M-1]
-
-    Args:
-        r: the key
-        M: bucket size
-
-    Returns:
-        int: the index of keys's bucket
-    '''
-    return int((r ** 2) * M)
-
-
-def create_data(size: int) -> list:
-    '''
-    Creates sampling data for the example unit circle
-
-    Args:
-        size: size of random test data
-
-    Returns:
-        list: sampling test data
-    '''
+def create_data(size):
     a = []
     while len(a) < size:
         x, y = random.uniform(-1, 1), random.uniform(-1, 1)
-        r = math.sqrt(x ** 2 + y ** 2)
-        if r < 1.0:
+        r = math.sqrt(x**2 + y**2)
+        if r < 1.0: # der Punkt (x,y) liegt im Einheitskreis
             a.append(r)
-    return a
+    return a 
 
-
-def insertion_sort(elements: list) -> None:
-    '''
-
-    Args:
-        elements: a list of elements to be sorted
-
-    Returns:
-        None: (Call by reference / insito)
-    '''
-    j = 1
-
-    while j < len(elements):
-        current = j
-        while elements[current - 1] > elements[current] and current > 0:
-            elements[current - 1], elements[current] = elements[current], elements[current - 1]
-            current -= 1
-        j += 1
-
-
-def bucket_sort(a: list, bucketMap: callable, d: int) -> list:
-    '''
-    Sorts a in constant complexity
-
-    Args:
-        a: a list of elements
-        bucketMap: a mapper function Keys(a)-->[0, M-1]
-        d: N/M
-
-    Returns:
-        list: a sorted list
-    '''
+def insertionSort(a):
     N = len(a)
-    M = N // d
-    if M == 0: M = 1
 
-    buckets = [[] for x in range(M)]
-    for r in a:
-        buckets[bucketMap(r, M)].append(r)
+    for i in range(N):
+        current = a[i]
+        j = i
+        while j > 0:
+            if current < a[j-1]:
+                a[j] = a[j-1]
+            else:
+                break
+            j -= 1
+        a[j] = current
 
-    for k in range(M):
-        insertion_sort(buckets[k])
+#(a)
+def quantize(r,M):
+    #Anteil der Punkte innerhalb des Kreises mit Radius r ist gerade Flächeninhalt Kreis Radius r / Flächeninhalt Einheitskreis = r**2
+    return int(r**2*M)
 
-    return [r for k in range(M) for r in buckets[k]]
-
-
-# Helper Functions
-
-def chi_squared(buckets: list) -> bool:
-    chiSquared = 0
-    N = 0
+#(b)
+def chi_squared(buckets):
+    #wir erhalten ein Array bestehend aus einzelnen arrays, den jeweiligen buckets
     M = len(buckets)
-    for k in range(0, M):
-        N += len(buckets[k])
-    c = N / M
-    for k in range(0, M):
-        chiSquared += ((len(buckets[k]) - c) ** 2) / c
 
-    tau = math.sqrt(2 * chiSquared) - math.sqrt(2 * M - 3)
-
+    #Gesamtanzahl der einzelen bucketelemente ist die Lände des ursprünglichen arrays a
+    N = 0
+    for index in range(M):
+        N += len(buckets[index])
+    
+    c= N/M
+    chi_sum = 0
+    # chi^2 = sum_{k=0}^{M-1} \frac{(n_k-c)^2}{c}
+    for index in range(M):
+        chi_sum += ((len(buckets[index])-c)**2 ) / c
+    
+    tau = math.sqrt(2* chi_sum)- math.sqrt(2*M-3)
     if abs(tau) > 3:
         return False
     return True
 
-
-# PyTests
-@pytest.mark.skip
-def test_quantize():
-    max = 1000
-    min = 500
-    failed = 0
-    success = 0
-    tolerance = 0.03
-    for size in range(min, max):
-        sampleData = create_data(size)
-        # we await buckets between 10 and 3 elements
-        for M in range(size // 10, size // 3):
-            buckets = [[] for i in range(0, M)]
-            for r in sampleData:
-                buckets[quantize(r, M)].append(r)
-                # buckets[int(r*M)].append(r)
-            if chi_squared(buckets):
-                success += 1
-            else:
-                failed += 1
-    if failed / (failed + success) > tolerance:
-        print("Failed : ", failed)
-        print("Success : ", success)
-        raise AssertionError("FailRate is bigger than tolerance")
+def quantize_naive(r,M):
+    return int(r*M)
 
 
-def test_insertion_sort():
-    a = [random.random() for x in range(100)]
+#besonders für den Einheitskreis: a[k]._key == a[k]
+#(c)
+def bucketSort(a,quantize, d):
+    N = len(a)
+    M = int(N/float(d))
 
-    b = copy.copy(a)
+    #M leere Buckets erzeugen
+    buckets = [[] for k in range(M)]
 
-    insertion_sort(a)
-    b.sort()
-    assert a == b
+    #Daten auf die Buckets verteilen
+    for k in range(len(a)):
+        #bucket index berechnen
+        index = quantize(a[k], M)
+        buckets[index].append(a[k])
+    
+    start = 0
+    for k in range(M):
+        insertionSort(buckets[k])
+        end = start + len(buckets[k])
+        a[start:end] = buckets[k]
+        start += len(buckets[k])
 
 
+
+############# tests ##########
 def test_bucket_sort():
-    a = create_data(100)
 
-    result = bucket_sort(a, quantize, 3)
-    result2 = bucket_sort(a, lambda r, M: int(r * M), 3)
+    #random array with size N
+    N = 500
+    a = create_data(N)
+    d = 3
 
-    a.sort()
+    #check bucketsort
+    bucketSort(a,quantize, d )
+    for i in range(len(a)-1):
+        assert a[i] <= a[i+1]
+    
+    #for chi function
 
-    assert a == result
-    assert a == result2
+    #the better quantize function
+    assert check_chi(a,quantize, d) == True
+
+    #naive implementation
+    b = create_data(N)
+    assert check_chi(b,quantize_naive,d) == False
 
 
-def test_complexity():
+def check_chi (a,quantize, d):
+    N = len(a)
+    M = int(N/float(d))
+
+    #M leere Buckets erzeugen
+    buckets = [[] for k in range(M)]
+
+    #Daten auf die Buckets verteilen
+    for k in range(len(a)):
+        #bucket index berechnen
+        index = quantize(a[k], M)
+        buckets[index].append(a[k])
+    
+    return chi_squared(buckets)
+
+#(c)
+def test_linear_runtime_quantize():
     max_c = -1
     min_c = -1
-    for N in range(1, 1000):
 
-        scope = globals()
-        t = timeit.Timer(stmt=f"bucket_sort(a,quantize,3)", setup=f"a=create_data({N})", globals=scope).timeit(number=5) / 5
-        c = t / N
+    for i in range(200,500):
+        #get runtime
 
-        if c < min_c or min_c == -1:
-            min_c = c
-        elif c > max_c or min_c == -1:
-            max_c = c
+        t = timeit.Timer(stmt="bucketSort(a,quantize,d)", setup="from bucket_sort_mona import create_data;from bucket_sort_mona import quantize; from bucket_sort_mona import bucketSort; N = "+ str(i)+";  a = create_data(N ); d = 3;").timeit(number=100)/100
+        
+        #is runtime approx linear?
+        const = t / i
+        if const < min_c or min_c == -1:
+            min_c = const
+        elif const> max_c or max_c == -1:
+            max_c = const
+    
+    print("Min_c with quantize: ", min_c)
+    print("Max_c with quantize", max_c)
+    #now see the diff
+    #assert max_c - min_c <= 5
 
-    print(f"{max_c=}")
-    print(f"{min_c=}")
-
-def test_complexity_naive():
+def test_linear_runtime_quantize_naive():
     max_c = -1
     min_c = -1
-    for N in range(1, 1000):
 
-        scope = globals()
-        t = timeit.Timer(stmt=f"bucket_sort(a,lambda r, M: int(r*M),3)", setup=f"a=create_data({N})", globals=scope).timeit(number=5) / 5
-        c = t / N
+    for i in range(200,500):
+        #get runtime
 
-        if c < min_c or min_c == -1:
-            min_c = c
-        elif c > max_c or min_c == -1:
-            max_c = c
-
-    print(f"{max_c=}")
-    print(f"{min_c=}")
+        t = timeit.Timer(stmt="bucketSort(a,quantize_naive,d)", setup="from bucket_sort_mona import create_data;from bucket_sort_mona import quantize_naive; from bucket_sort_mona import bucketSort; N = "+ str(i)+";  a = create_data(N ); d = 3;").timeit(number=100)/100
+        
+        #is runtime approx linear?
+        const = t / i
+        if const < min_c or min_c == -1:
+            min_c = const
+        elif const> max_c or max_c == -1:
+            max_c = const
+    
+    print("Min_c with quantize_naive: ", min_c)
+    print("Max_c with quantize_naive", max_c)
+        
