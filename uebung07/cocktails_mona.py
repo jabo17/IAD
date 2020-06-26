@@ -47,7 +47,7 @@ def cocktails_inverse(recipes):
     return new_dict
 
 #(c)
-def possible_cocktails(inverse_recipes, available_ingredients):
+def available_cocktails(inverse_recipes, available_ingredients):
     #normalize the strings
     for i in range(len(available_ingredients)):
         available_ingredients[i] = normalize_strings(available_ingredients[i])
@@ -75,6 +75,54 @@ def possible_cocktails(inverse_recipes, available_ingredients):
 
     return available_recipes
 
+#(d)
+def optimal_ingredients(inverse_recipes):
+    #sorting the inverse_recipes by len of array
+    for k in sorted(inverse_recipes, key=lambda k: len(inverse_recipes[k]), reverse=True):
+        print (k)
+    
+    #create dict with the 15 most used ingredients
+    most_used_dict = dict(inverse_recipes)
+    counter = 0
+    for k in inverse_recipes:
+        counter += 1
+        if counter >= 16:
+            most_used_dict.pop(k)
+    
+    #create list with the 15 most needed ingredients
+    most_needed_ingredients = []
+    for k in most_used_dict:
+        most_needed_ingredients.append(k)
+
+    
+    best_mix = []
+    max_possible_cocktails = []
+    #durchlaufe möglichkeiten der 15 elemente 
+    for k in range(0,len(most_needed_ingredients),4):
+        test_list = []
+        test_list = most_needed_ingredients[k:5]
+        #hier könnte man nocht die elemente k bis k+4 auslassen
+        for i in range(len(most_needed_ingredients)):
+            #create the test combination
+            test_list.append(most_needed_ingredients[i])
+            #get the list of possible cocktails
+            possible_cocktails = available_cocktails(inverse_recipes, test_list)
+            #now check if its the maximum
+            if len(max_possible_cocktails) < len(possible_cocktails):
+                max_possible_cocktails = possible_cocktails
+                best_mix = test_list
+            if most_needed_ingredients[i] in test_list:
+                test_list.remove(most_needed_ingredients[i])
+    print(max_possible_cocktails)
+    return best_mix
+
+
+
+
+
+
+
+
 def ignore_list(list):
     for i in list:
         if i == 'wasser':
@@ -82,6 +130,8 @@ def ignore_list(list):
         elif i == 'brot':
             list.remove(i)
         elif i == 'cocktailkirschen':
+            list.remove(i)
+        elif i == 'pfeffer':
             list.remove(i)
     return list
                     
@@ -121,8 +171,14 @@ def test_possible_cocktails():
     recipes = create_recipes()
     inverse_recipes = cocktails_inverse(recipes)
     available_ingredients = ['maracujasaft', 'crushed ice', 'maracujasirup', 'orangensaft', 'kokossirup', 'sahne', 'blue curacao', 'meersalz ', 'wodka']
-    available_recipes = possible_cocktails(inverse_recipes, available_ingredients)
+    available_recipes = available_cocktails(inverse_recipes, available_ingredients)
     print(available_recipes)
+
+def test_optimal_ingredients():
+    recipes = create_recipes()
+    inverse_recipes = cocktails_inverse(recipes)
+    best_mix = optimal_ingredients(inverse_recipes)
+    print(best_mix)
     
 def create_recipes():
     filename = 'cocktails.json'
