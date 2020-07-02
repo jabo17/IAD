@@ -122,7 +122,6 @@ def test_plot_complexity_fib5_aigainst_fib7():
     fig.savefig("fib_complexity_5vs7.png")
     plt.show()
 
-@pytest.mark.skip
 def test_plot_complexity_all():
     M = 500
     precision = 4
